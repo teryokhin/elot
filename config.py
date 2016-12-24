@@ -9,7 +9,7 @@ class Config(object):
     NOREPLY_SERVER = 'smtp.example.com'
     NOREPLY_EMAIL = 'no-reply@example.com'
     NOREPLY_PW = 'examplepass'
-    PASSWORD_EMAIL_TEXT = 'Уважаемый покупатель!\r\n\r\nВаш код для доступа к покупкам на сайте eLot.xyz:\r\n\r\n%s'
+    PASSWORD_EMAIL_TEXT = 'Уважаемый покупатель!\r\n\r\nВаш код для доступа к покупкам на сайте example.com:\r\n\r\n%s'
     ORDER_EMAIL_TEXT = 'Уважаемый покупатель!<br/><br/>Заказ № %d на сайте example.com был оплачен. Ваши данные:<br/><br/>%s'
     PAYMENT_SYSTEMS = ['ym', 'wm', 'vm']
     PAYMENT_SYSTEMS_NAMES = {'ym': 'Яндекс.Деньги', 'wm': 'WebMoney', 'vm': 'Банковская карта'}
