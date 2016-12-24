@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block custom_css %}
+    <link href="{{ url_for('static', filename='css/shop-item.css') }}" rel="stylesheet">
+    <script src="{{ url_for('static', filename='js/moment.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row" itemscope itemtype="http://schema.org/Product">
+            <div class="col-md-3">
+                <div itemprop="offers" itemscope itemtype="http://schema.org/Offer">
+                    <meta itemprop="priceCurrency" content="RUB"/>
+                    <meta itemprop="price" content="{{ item.price }}"/>
+                    {% if item.goods_num > 0 %}
+                    <p class="lead text-center">
+                        <link itemprop="availability" href="http://schema.org/InStock" />Оплатить с помощью:
+                    </p>
+                    <div class="list-group">
+                        {% for ps in config.PAYMENT_SYSTEMS %}
+                            <a href="{{ url_for('new_order', num=item.id, ps=ps) }}" class="list-group-item ">
+                                <img src="{{ url_for('static', filename='img/'+ps+'.png') }}" alt="{{ ps|upper }}"/>
+                                {{ config.PAYMENT_SYSTEMS_NAMES[ps] }}
+                                <strong class="pull-right">{{ ps|ps_price(item.price) }} руб.</strong>
+                            </a>
+                        {% endfor %}
+                        <br/><p class="text-center text-muted">Цены указаны с учетом комиссии платёжных систем</p>
+                    </div>
+                    {% else %}
+                    <link itemprop="availability" href="http://schema.org/OutOfStock" /> <p class="lead text-center">Скоро в продаже!</p>
+                    {% endif %}
+                </div>
+                {% if item.steam_appid %}
+                    <div id="steam_price">
+                        <p class="text-center">
+                            <img src="{{ url_for('static', filename='img/loading.gif') }}" alt="Загрузка"/> Загрузка...
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="col-md-9">
+
+                <div class="thumbnail">
+                    <img class="img-responsive" itemprop="image"
+                         src="{{url_for('static', filename='item_img/'~item.id~'.jpg')}}"
+                         alt="{{ item.name }}"> {# 800x300 #}
+                    <div class="caption-full">
+                        {% if item.ru_cis %}
+                        <p class="alert alert-warning pull-right"><abbr title="Данный товар может быть активирован только в этих странах: Армения, Азербайджан, Беларусь, Грузия, Киргизстан, Казахстан, Молдова, Таджикистан, Туркменистан, Узбекистан, Украина, Россия">Россия и СНГ</abbr></p>
+                        {% else %}
+                        <p class="alert alert-success pull-right"><abbr title="Данный товар может быть активирован в любой стране">Все страны</abbr></p>
+                        {% endif %}
+                        <h4 class="text-primary" itemprop="name">{{ item.name }}</h4>
+                        <p itemprop="description">{{ item.description|safe }}</p>
+                        {% if item.info %}
+                        <hr>
+                        <h3>Дополнительная информация</h3>
+                        <p>{{ item.info|safe }}</p>
+                        {% endif %}
+                        <hr>
+                    </div>
+                    <div class="ratings">
+                        <p class="pull-right text-muted">{% if not item.infinite %}{{item.order_num}} из {{item.goods_num+item.order_num}}{% else %}{{item.order_num}}{% endif %}
+                    {{item.order_num|ru_pluralize('продан,продано,продано') }}</p>
+                        <p>
+                            <a href="{{ url_for('category', num=item.category.id) }}">{{ item.category.name }}</a>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="well">
+                    {% for order in orders %}
+                        {{ render_reviews(order.user.email, order.datetime, order.rating, order.review) }}
+                        <hr style='margin-top:-1em' />
+                    {% else %}
+                          <span class="lead text-muted">Нет отзывов</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% macro render_reviews(email, datetime, rating, review) %}
+    <hr style='margin-top:-1em' />
+    <div class="row" itemprop="review" itemscope itemtype="http://schema.org/Review">
+    <div itemprop="reviewRating" itemscope itemtype="http://schema.org/Rating">
+        <meta itemprop="worstRating" content = "1"/>
+        <meta itemprop="bestRating" content = "5"/>
+    {% if rating != True and rating != False %}
+        <meta itemprop="ratingValue" content = "4"/>
+    </div>
+        <div class="col-md-12">
+    {% elif rating == True %}
+        <meta itemprop="ratingValue" content = "5"/>
+    </div>
+        <div class="col-md-12 bg-success">
+    {% elif rating == False %}
+        <meta itemprop="ratingValue" content = "1"/>
+    </div>
+        <div class="col-md-12 bg-danger">
+    {% endif %}
+            <span class="text-muted" itemprop="author">{{ email|hide_email }}</span>
+            <meta itemprop="datePublished" content="{{datetime.strftime('%Y-%m-%dT%H:%M:%SZ')}}"/>
+            <span class="pull-right text-muted">
+                <script>moment.locale('ru');document.write(moment("{{datetime.strftime('%Y-%m-%dT%H:%M:%S Z')}}").calendar());</script>
+            </span>
+
+            {% if review %}
+                {% if rating == True %}
+                    <p class="text-success" itemprop="reviewBody">{{ review }}</p>
+
+                {% elif rating == False %}
+                    <p class="text-danger" itemprop="reviewBody">{{ review }}</p>
+                    <meta itemprop="ratingValue" content = "1"/>
+                {% endif %}
+            {% else %}
+                <p class="text-muted"><i>Не оставил отзыв</i></p>
+
+            {% endif %}
+        </div>
+    </div>
+{% endmacro %}
+
+{% block custom_jquery %}
+    {% if item.steam_appid %}
+        <script>
+            $(document).ready(function(){
+                $("#steam_price").load("{{ url_for('steam_price', num=item.id) }}");
+            });
+        </script>
+    {% endif %}
+{% endblock %}

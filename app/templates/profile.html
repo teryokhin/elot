@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block custom_css %}
+    <script src="{{ url_for('static', filename='js/moment.js') }}"></script>
+{% endblock %}
+
+{% block custom_meta %}
+    <meta http-equiv="refresh" content="60">
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h2 class="lead">Мои заказы</h2>
+        <div class="row">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Дата заказа *</th>
+                    <th>Товар</th>
+                    <th>Стоимость</th>
+                    <th>Статус</th>
+                    <th>Данные</th>
+                    <th>Отзыв</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for order in orders %}
+                    <tr>
+                        <td><script>moment.locale('ru');document.write(moment("{{order.datetime.strftime('%Y-%m-%dT%H:%M:%S Z')}}").calendar());</script></td>
+                        <td><a href="{{ url_for('order', num=order.id) }}">{{ order.item.name }}</a></td>
+                        <td>{{ order.price }} руб.</td>
+                        {% if not order.paid %}
+                            {% if not order.canceled %}
+                                <td class="text-warning" style="width: 150px;">
+                                    Ожидается оплата
+                                    <a role="button" class="btn btn-xs btn-default" href="{{ url_for('order', num=order.id) }}">Оплатить</a>
+                                    <a role="button" class="btn btn-xs btn-danger" href="{{ url_for('cancel_order', num=order.id) }}">Отмена</a>
+                                </td>
+                            {% else %}
+                                <td class="text-danger">Отменен</td>
+                            {% endif %}
+                            <td>&times;</td>
+                            <td>&times;</td>
+                        {% else %}
+                            <td class="text-success">Оплачен</td>
+                            <td class="bg-info">{{ order.data.data|safe }}</td>
+                            {% if order.rating != True and order.rating != False %}
+                                <td>
+                                    <a href="{{ url_for('comment', num=order.id) }}"
+                                       class="btn btn-default" role="button" >Оставить отзыв</a>
+                                </td>
+                            {% elif order.rating == True %}
+                                <td class="bg-success">
+                                    <i>&#10003;</i>
+                                </td>
+                            {% elif order.rating == False %}
+                                <td class="bg-danger">
+                                    <i>&#10003;</i>
+                                </td>
+                            {% endif %}
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block footnote %}
+        <p>* Если не оплатить заказ в течение {{ config.CANCEL_UNPAID_ORDERS_AFTER_MINS }} минут, он будет автоматически отменен </p>
+{% endblock %}

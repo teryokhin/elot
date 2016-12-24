@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block custom_css %}
+    <script src="{{ url_for('static', filename='js/moment.js') }}"></script>
+{% endblock %}
+
+{% block custom_meta %}
+    <meta http-equiv="refresh" content="30">
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h2 class="lead">Заказ № {{ order.id }}</h2>
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table">
+                    <tbody>
+                    <tr>
+                        <td>Товар</td>
+                        <td><a href="{{ url_for('item', num=order.item_id) }}">{{ order.item.name }}</a></td>
+                    </tr>
+                    <tr>
+                        <td>Дата заказа</td>
+                        <td><script>moment.locale('ru');document.write(moment("{{order.datetime.strftime('%Y-%m-%dT%H:%M:%S Z')}}").calendar());</script></td>
+                    </tr>
+                    <tr>
+                        <td>Стоимость</td>
+                        <td>{{ order.price }} руб.</td>
+                    </tr>
+                    <tr>
+                        <td>Статус</td>
+                        {% if not order.paid %}
+                            {% if order.canceled %}
+                                <td class="text-danger">Отменен</td>
+                            {% else %}
+                                <td class="text-warning">
+                                    Ожидается оплата
+                                    {% if not order.item.infinite %}(отмена заказа <script>document.write(moment("{{order.datetime.strftime('%Y-%m-%dT%H:%M:%S Z')}}").add({{ config.CANCEL_UNPAID_ORDERS_AFTER_MINS }}, 'minutes').fromNow());</script>){% endif %}
+                                </td>
+                            {% endif %}
+                        {% else %}
+                            <td class="text-success">Оплачен</td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        {% if order.paid %}
+                            <td colspan="2" class="bg-info">{{ order.data.data|safe }}</td>
+                        {% elif not order.canceled %}
+                            <td colspan="2">
+                                <button type="button" class="btn btn-lg btn-default"
+                                        onclick="document.getElementById('pay-{{order.payment_system}}').submit();">
+                                    <img src="{{ url_for('static', filename='img/'+order.payment_system+'.png') }}"/>
+                                    Оплатить ({{ config.PAYMENT_SYSTEMS_NAMES[order.payment_system] }})</button>
+                                <a href="{{ url_for('cancel_order', num=order.id) }}"
+                                   class="btn btn-lg btn-danger" role="button">Отменить заказ</a>
+                            </td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        {% if order.paid %}
+                            <td colspan="2">
+                                <a href="{{ url_for('comment', num=order.id) }}"
+                                       class="btn btn-lg btn-default" role="button">Оставить отзыв</a>
+                            </td>
+                        {% endif %}
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% if order.payment_system == 'ym' %}
+        <form id='pay-ym' method="POST" action="https://money.yandex.ru/quickpay/confirm.xml">
+            <input type="hidden" name="receiver" value="{{ config.YM_PURSE }}">
+            <input type="hidden" name="formcomment" value="example.com">
+            <input type="hidden" name="short-dest" value="example.com: {{ order.item.name }}">
+            <input type="hidden" name="label" value="{{ order.id }}">
+            <input type="hidden" name="quickpay-form" value="shop">
+            <input type="hidden" name="targets" value="Заказ #{{ order.id }}">
+            <input type="hidden" name="sum" value="{{ order.price }}" data-type="number" >
+            <input type="hidden" name="paymentType" value="PC">
+        </form>
+    {% elif order.payment_system == 'vm' %}
+        <form id='pay-vm' method="POST" action="https://money.yandex.ru/quickpay/confirm.xml">
+            <input type="hidden" name="receiver" value="{{ config.YM_PURSE }}">
+            <input type="hidden" name="formcomment" value="example.com">
+            <input type="hidden" name="short-dest" value="example.com: {{ order.item.name }}">
+            <input type="hidden" name="label" value="{{ order.id }}">
+            <input type="hidden" name="quickpay-form" value="shop">
+            <input type="hidden" name="targets" value="Заказ #{{ order.id }}">
+            <input type="hidden" name="sum" value="{{ order.price }}" data-type="number" >
+            <input type="hidden" name="paymentType" value="AC">
+        </form>
+    {% elif order.payment_system == 'wm' %}
+        <form id='pay-wm' action="https://merchant.webmoney.ru/lmi/payment.asp" method="POST" accept-charset="windows-1251">
+            <input type="hidden" name="LMI_PAYEE_PURSE" value="{{ config.WM_PURSE }}">
+            <input type="hidden" name="LMI_PAYMENT_AMOUNT" value="{{ order.price }}">
+            <input type="hidden" name="LMI_PAYMENT_NO" value="{{ order.id }}">
+            <input type="hidden" name="LMI_PAYMENT_DESC_BASE64" value="{{ b64desc[2:-1]|safe }}">
+            <input type="hidden" name="LMI_SUCCESS_URL" value="{{ request.url }}">
+            <input type="hidden" name="LMI_SUCCESS_METHOD" value="0">
+            <input type="hidden" name="LMI_PAYMER_EMAIL" value="{{ order.user.email }}">
+        </form>
+    {% endif %}
+{% endblock %}

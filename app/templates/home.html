@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block custom_css %}
+    <link href="{{ url_for('static', filename='css/home.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% macro render_item(item) %}
+    <div class="col-sm-4 col-lg-4 col-md-4">
+        <div class="thumbnail">
+            <a href="{{ url_for('item', num=item.id) }}">
+              <img src="{{item.img_url or url_for('static', filename='item_img/'~item.id~'.jpg')}}" alt="{{item.name}}">
+            </a>
+            <div class="caption">
+                <h4 class="price pull-right">{{ item.price }} руб.</h4>
+                <h4><a href="{{ url_for('item', num=item.id) }}">{{ item.name }}</a></h4>
+                <p>{{ item.short_description|safe }}</p>
+            </div>
+
+            <div class="ratings">
+                <p class="pull-right text-muted">{% if not item.infinite %}{{item.order_num}} из {{item.goods_num+item.order_num}}{% else %}{{item.order_num}}{% endif %}
+                    {{item.order_num|ru_pluralize('продан,продано,продано') }}</p>
+                <p>
+                    <a href="{{ url_for('category', num=item.category.id) }}">{{ item.category.name }}</a>
+                </p>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            {% for item in items %}
+                {{ render_item(item) }}
+            {% else %}
+                <h1>Все товары в этой категории закончились :(</h1>
+                <h2>Приходите позже</h2>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+
+

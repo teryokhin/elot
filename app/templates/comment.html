@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+
+{% macro render_errors(field) %}
+  {% if field.errors %}
+    <ul class=errors>
+    {% for error in field.errors %}
+      <div class="alert alert-danger" role="alert">
+        {{ error|safe }}
+      </div>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endmacro %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <form method="POST" action="{{ url_for('comment', num=order.id) }}">
+                    {{ form.csrf_token }}
+                    <h2>Отзыв о товаре <a href="{{ url_for('item', num=order.item.id) }}">{{ order.item.name }}</a></h2>
+                    <label for="rating">Ваша оценка:</label>
+                    <input id="rating-0" name="rating" type="radio" value="good">
+                    <label for="rating-0">
+                        <span class="text-success">хорошо</span>
+                    </label>
+
+                    <input id="rating-1" name="rating" type="radio" value="bad">
+                    <label for="rating-1">
+                        <span class="text-danger">плохо</span>
+                    </label>
+                    <br/>
+                    {{ render_errors(form.rating) }}
+                    <label for="review">Ваш отзыв:</label>
+                    <textarea autofocus id="review" name="review" rows="4" style="width:100%" ></textarea>
+                    {{ render_errors(form.review) }}
+                    <div style="padding-bottom:4px;"><strong>Внимание</strong>: текст отзыва будет доступен для всех</div>
+                    <button class="btn btn-primary btn-block" type="submit">Оставить отзыв</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

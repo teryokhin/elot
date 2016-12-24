@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block body %}
+    <div class="container">
+        <h2 class="lead">
+            Все товары магазина (<a href="{{ url_for('admin_item_orders', num=0) }}">Все заказы</a>)
+            <a role="button" class="btn btn-primary" href="{{ url_for('admin_new') }}"><strong>+</strong> Добавить товар</a>
+        </h2>
+        <div class="row">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th># (PR)</th>
+                    <th>Товар</th>
+                    <th>Стоимость</th>
+                    <th>Ограничения</th>
+                    <th>Заказов</th>
+                    <th>Осталось</th>
+                    <th>Видимость</th>
+                    <th>Ред.</th> {# &#9998; #}
+                    <th>Уд.</th> {# &times; #}
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in items %}
+                    <tr {% if item.goods_num == 0 %}class="bg-danger" {% endif %}>
+                        <td><a href="{{ url_for('item', num=item.id) }}">{{ item.id }} ({{ item.priority }})</a></td>
+                        <td><a href="{{ url_for('admin_item', num=item.id) }}">{{ item.name }}</a></td>
+                        <td>{{ item.price }} руб.</td>
+                        {% if item.ru_cis %}
+                            <td class="bg-warning">RU+CIS</td>
+                        {% else %}
+                            <td class="bg-success">FREE</td>
+                        {% endif %}
+                        <td>
+                            {% if item.order_num > 0 %}
+                                <a href="{{ url_for('admin_item_orders', num=item.id) }}">{{ item.order_num }}</a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td>{{ item.goods_num }}</td>
+                        {% if item.hidden %}
+                            <td class="bg-warning">Скрытый</td>
+                        {% else %}
+                            <td class="bg-success">Видимый</td>
+                        {% endif %}
+                        <td><a role="button" class="btn btn-xs btn-default" href="{{ url_for('admin_item', num=item.id) }}">&#9998;</a></td>
+                        <td><a role="button" class="btn btn-xs btn-danger" href="{{ url_for('admin_item_delete', num=item.id) }}" onclick="return confirm('Вы уверены?');">&times;</a></td>
+
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+{% endblock %}

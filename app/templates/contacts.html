@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <fieldset>
+                <legend>Техническая поддержка</legend>
+                <p class="lead"><a href="mailto:support@example.com" target="_blank">
+                    <img src="{{ url_for('static', filename='img/email.png') }}"/>
+                    support@example.com</a></p>
+            </fieldset>
+            <fieldset>
+                <legend>Социальные сети</legend>
+                <p class="lead"><a href="http://vk.com/example.com" target="_blank">
+                    <img src="{{ url_for('static', filename='img/vk.jpg') }}"/>
+                    Группа VK</a></p>
+            </fieldset>
+        </div>
+    </div>
+{% endblock %}

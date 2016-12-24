@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block body %}
+    <div class="container">
+        <h2 class="lead">{{ item_name }} заказы:</h2>
+        <div class="row">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Дата</th>
+                    <th>Пользователь</th>
+                    <th>К оплате</th>
+                    <th>Статус</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for order in orders %}
+                    <tr>
+                        <td>{{ order.id }}</td>
+                        <td>{{ order.datetime.strftime('%d.%m.%Y %H:%M') }}</td>
+                        <td>{{ order.user.email }}</td>
+                        <td>{{ order.price }} руб. | {{ order.payment_system|upper }}</td>
+                        {% if not order.paid %}
+                            {% if order.canceled %}
+                                <td class="text-danger">Отменен</td>
+                            {% else %}
+                                <td class="text-warning">Ожидается оплата {#  wait_time #}</td>
+                            {% endif %}
+                        {% else %}
+                            <td class="text-success">Оплачен</td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+{% endblock %}

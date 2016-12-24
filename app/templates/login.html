@@ -1,0 +1,23 @@
+{% extends "signup.html" %}
+
+{% block body %}
+    <div class="container">
+        <form class="form-signin" method="POST" autocomplete="off" action="{{ url_for('login') }}">
+            <fieldset>
+            {{ form.csrf_token }}
+            <legend>Вход в систему</legend>
+            <p class="text-primary lead">{{ user_email }}</p>
+            {{ form.password.label(for="inputPassword", class="sr-only") }}
+            {{ form.password(id="inputPassword", class="form-control", placeholder="Код из email", autofocus=true) }}
+            {{ render_errors(form.password) }}
+            <span class="lead">
+                {{ form.remember_me }}
+                {{ form.remember_me.label(for="remember_me") }}
+            </span>
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Войти</button>
+            <br/>
+            <p class="text-muted">Нажимая кнопку Войти вы потдверждайте ваше полное согласие с <a href="{{ url_for('static', filename='oferta.pdf') }}">Договором-офертой</a></p>
+        </fieldset>
+        </form>
+    </div>
+{% endblock %}

@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='trumbowyg/ui/trumbowyg.min.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div class="container" xmlns:word-break="http://www.w3.org/1999/xhtml">
+        <div class="row">
+            <form style="float: left"  class="form-horizontal col-md-6" method="POST" action="">
+            <fieldset>
+                <legend>Редактирование <a href="{{ url_for('item', num=item.id) }}">товара № {{ item.id }}</a></legend>
+
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="name">Товар </label>
+                    <div class="col-md-10">
+                        <input id="name" name="name" type="text" class="form-control input-md" maxlength="128" value="{{ item.name }}"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="img_url">
+                        <details>
+                            <summary>JPG </summary>
+                            <br/>
+                            <img width="358" height="150" src="{{ url_for('static', filename='item_img/'~item.id~'.jpg')+'?'~img_rand }}"/>
+                        </details>
+                    </label>
+                    <div class="col-md-10">
+                        <input id="img_url" name="img_url"  type="text" class="form-control input-md" maxlength="128" value="{{ item.img_url }}"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="short_desc">Краткое описание </label>
+                    <div class="col-md-10">
+                        <textarea id="short_desc" name="short_desc" class="form-control" maxlength="256">{{ item.short_description }}</textarea>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="description">Описание </label>
+                    <div class="col-md-10">
+                        <textarea id="description" name="description" class="form-control" maxlength="1024" >{{ item.description }}</textarea>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="price">
+                        <details>
+                            <summary>Цена </summary>
+                            <br/>
+                            <p>WM{{ 'wm'|ps_price(item.price) }}</p>
+                            <p><a href="https://money.yandex.ru/embed/small.xml?account={{ config.YM_PURSE }}&quickpay=small&yamoney-payment-type=on&button-text=01&button-size=l&button-color=orange&targets=Admin+Donation&default-sum={{ 'ym'|ps_price(item.price) }}&successURL=">
+                                YM{{ 'ym'|ps_price(item.price)  }}</a></p>
+                            <p><a href="https://money.yandex.ru/embed/small.xml?account={{ config.YM_PURSE }}&quickpay=small&any-card-payment-type=on&button-text=01&button-size=l&button-color=orange&targets=Admin+Donation&default-sum={{ 'vm'|ps_price(item.price) }}&successURL=">
+                                VM{{ 'ym'|ps_price(item.price)  }}</a></p>
+                        </details>
+
+                    </label>
+                    <div class="col-md-10">
+                        <input id="price" name="price" type="text" class="form-control input-md" value="{{ item.price }}"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="ru_cis">Ограничения </label>
+                    <div class="col-md-10">
+                        <label class="radio-inline text-warning" for="ru_cis">
+                            <input id="ru_cis" name="ru_cis" type="radio" value="true" {% if item.ru_cis %}checked{% endif %}/>
+                            RU+CIS
+                        </label>
+                        <label class="radio-inline  text-success" for="ru_cis_2">
+                            <input id="ru_cis_2" name="ru_cis" type="radio" value="false" {% if not item.ru_cis %}checked{% endif %} />
+                            FREE
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="hidden">Видимость</label>
+                    <div class="col-md-10">
+                        <label class="radio-inline text-success" for="hidden">
+                            <input id="hidden" name="hidden" type="radio" value="false" {% if not item.hidden %}checked{% endif %}/>
+                            Видимый
+                        </label>
+                        <label class="radio-inline text-warning" for="hidden_2">
+                            <input id="hidden_2" name="hidden" type="radio" value="true" {% if item.hidden %}checked{% endif %} />
+                            Скрытый
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="cat_id">Категория </label>
+                    <div class="col-md-10">
+                        <select id="cat_id" name="cat_id" class="form-control">
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}" {% if item.category_id ==  cat.id %}selected="selected"{% endif %}>{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="priority">Приоритет </label>
+                    <div class="col-md-10">
+                        <input id="priority" name="priority" type="number" class="form-control input-md" value="{{ item.priority }}"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="steam_appid">SteamAppID </label>
+                    <div class="col-md-10">
+                        <input id="steam_appid" name="steam_appid" type="number" class="form-control input-md" value="{{ item.steam_appid }}"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="info">Доп. информация </label>
+                    <div class="col-md-10">
+                        <textarea id="info" name="info" class="form-control" maxlength="256">{{ item.info }}</textarea>
+                    </div>
+                </div>
+
+                <input type="hidden" name="FORM_TYPE" value="item">
+
+                <div class="form-group">
+                    <div class="col-md-12">
+                        <input type="submit" name="submit" class="btn btn-default col-md-12" value="Сохранить" />
+                    </div>
+                </div>
+
+            </fieldset>
+            </form>
+            <form style="float: left"  class="form-horizontal col-md-6" method="POST" action="">
+            <fieldset>
+                <legend>Данные для <a href="{{ url_for('item', num=item.id) }}">товара № {{ item.id }}</a></legend>
+                <input type="hidden" name="FORM_TYPE" value="goods">
+                <input type="hidden" name="item_id" value="{{ item.id }}">
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="new_data">Добавить данные </label>
+                    <div class="col-md-10">
+                        <textarea id="new_data" name="new_data" class="form-control" maxlength="512">Ссылка на получение игры в Steam: <a href="TEMP">TEMP</a></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-12">
+                        <input type="submit" name="submit" class="btn btn-default col-md-12" value="Отправить данные" />
+                    </div>
+                </div>
+            </fieldset>
+            <table class="table table-bordered">
+                <tbody>
+                {% for data in goods %}
+                    <tr>
+                        <td style="text-align: center; vertical-align: middle;"><strong>{{ data.id }}</strong><br/><a role="button" class="btn btn-xs btn-danger" href="{{ url_for('admin_data_delete', num=data.id) }}" onclick="return confirm('Вы уверены?');">&times;</a></td>
+                        <td style="word-break:break-all;">{{ data.data|safe }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block custom_jquery %}
+<script type="text/javascript" src="{{ url_for('static', filename='trumbowyg/trumbowyg.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='trumbowyg/langs/ru.min.js') }}"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+    $('#description').trumbowyg({lang: 'ru'});
+    $('#info').trumbowyg({lang: 'ru'});
+    $('#short_desc').trumbowyg({lang: 'ru'});
+});
+
+</script>
+{% endblock %}
